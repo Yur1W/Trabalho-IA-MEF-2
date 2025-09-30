@@ -5,7 +5,12 @@ public class PlayerController : MonoBehaviour
     protected Animator animator;
     protected Rigidbody2D rb;
     protected Collider2D coll;
+    [Header("Player States")]
+    [SerializeField]
     protected bool isRunning = false;
+
+    [Header("Player Values")]
+    [SerializeField]
     protected float playerSpeed = 5f;
 
     void Start()
@@ -22,7 +27,7 @@ public class PlayerController : MonoBehaviour
     }
     void Slide()
     {
-        if (Input.GetKeyUp(KeyCode.LeftShift) && isRunning)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && isRunning)
         {
             animator.SetTrigger("slided");
         }
@@ -31,7 +36,7 @@ public class PlayerController : MonoBehaviour
 
     void Movement()
     {
-        float moveInput = Input.GetAxisRaw("Horizontal");
+        float moveInput = Input.GetAxis("Horizontal");
         rb.linearVelocity = new Vector2(moveInput * playerSpeed, rb.linearVelocityY);
 
         if (moveInput != 0)
