@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
     protected Rigidbody2D rb;
     protected Collider2D coll;
     protected bool isRunning = false;
+    protected float playerSpeed = 5f;
 
     void Start()
     {
@@ -23,8 +24,25 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyUp(KeyCode.LeftShift) && isRunning)
         {
-            animator.SetTrigger("isSliding");
+            animator.SetTrigger("slided");
         }
-        
+
+    }
+
+    void Movement()
+    {
+        float moveInput = Input.GetAxisRaw("Horizontal");
+        rb.linearVelocity = new Vector2(moveInput * playerSpeed, rb.linearVelocityY);
+
+        if (moveInput != 0)
+        {
+            isRunning = true;
+            animator.SetBool("isRunning", true);
+        }
+        else
+        {
+            isRunning = false;
+            animator.SetBool("isRunning", false);
+        }
     }
 }

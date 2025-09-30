@@ -14,7 +14,7 @@ public class Player_Slash : PlayerController
        if (Input.GetKeyDown(KeyCode.P))
        {    
             isAttacking = true;
-            animator.SetTrigger("isSlashing");
+            animator.SetTrigger("slashed");
        } 
     }
 }
