@@ -52,6 +52,7 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetTrigger("slided");
             currentSpeed = slideSpeed;
+            state = playerState.sliding;
         }
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
@@ -61,16 +62,16 @@ public class PlayerController : MonoBehaviour
     }
 
     void Movement()
-    {   
-        
-        float moveInput = Input.GetAxis("Horizontal");
-        rb.linearVelocity = new Vector2(moveInput * currentSpeed, rb.linearVelocityY);
+    {
+
+        Vector3 movement = new Vector3(Input.GetAxis("Horizontal"), 0, 0);
+        float moveInput = Input.GetAxisRaw("Horizontal");
+        transform.position += movement * currentSpeed * Time.deltaTime;
 
         if (moveInput != 0)
         {
             isRunning = true;
             animator.SetBool("isRunning", true);
-            state = playerState.running;
         }
         else
         {
