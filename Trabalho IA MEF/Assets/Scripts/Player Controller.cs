@@ -10,8 +10,11 @@ public class PlayerController : MonoBehaviour
     [Header("Player States")]
     [SerializeField]
     protected bool isRunning = false;
+    [SerializeField]
     protected bool isAttacking = false;
+    [SerializeField]
     protected bool isSliding = false;
+    [SerializeField]
     protected bool isGrounded = true;
 
     [Header("Player Values")]
@@ -26,8 +29,7 @@ public class PlayerController : MonoBehaviour
     protected float slideTime = 0.5f;
 
     [SerializeField]
-    protected enum playerState { idle, running, jumping, falling, attacking, sliding, firing, hurt, throwing }
-    protected playerState state = playerState.idle; 
+    
 
     void Start()
     {   currentSpeed = playerSpeed;
@@ -39,12 +41,14 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       switch(state)
-       {
-            case playerState.idle:
-                Movement();
-                break;
-       }
+       
+         AnimatorStateInfo playerState = animator.GetCurrentAnimatorStateInfo(0);    
+       
+    }
+
+    void FixedUpdate()
+    {
+        
     }
     void Slide()
     {
@@ -52,7 +56,6 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetTrigger("slided");
             currentSpeed = slideSpeed;
-            state = playerState.sliding;
         }
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
@@ -81,12 +84,11 @@ public class PlayerController : MonoBehaviour
     }
     void slash()
     {
-        isAttacking = Input.GetKeyDown(KeyCode.P);
+        isAttacking = Input.GetKey(KeyCode.P);
         if (isAttacking && !isSliding && !isRunning)
-        {
-            isAttacking = true;
+        {   
             animator.SetTrigger("slashed");
-            state = playerState.attacking;
+            
         }
     }
 }

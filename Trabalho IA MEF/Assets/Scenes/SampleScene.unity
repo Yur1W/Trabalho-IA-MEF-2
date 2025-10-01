@@ -267,7 +267,6 @@ GameObject:
   - component: {fileID: 335647268}
   - component: {fileID: 335647267}
   - component: {fileID: 335647266}
-  - component: {fileID: 335647265}
   m_Layer: 0
   m_Name: Player
   m_TagString: player
@@ -275,23 +274,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &335647265
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 335647264}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3918b5686a651ef4e9fbce89f6088f5c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isRunning: 0
-  playerSpeed: 5
-  currentSpeed: 0
-  slideSpeed: 8
-  slideTime: 0.5
 --- !u!114 &335647266
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -305,6 +287,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isRunning: 0
+  isAttacking: 0
+  isSliding: 0
+  isGrounded: 1
   playerSpeed: 5
   currentSpeed: 0
   slideSpeed: 8
@@ -381,7 +366,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 335647264}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: ecfe17c914941b744bbeab5a2c520a75, type: 2}
   m_CullingMode: 0
