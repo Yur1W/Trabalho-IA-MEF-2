@@ -34,6 +34,9 @@ public class PlayerController : MonoBehaviour
     protected float slideSpeed = 8f;
     [SerializeField]
     protected float slideTime = 0.5f;
+    [SerializeField]
+    protected float attackDuration = 30f;
+    protected float attackTime;
     
     [Header("Checks")]
     bool inputpulo;
@@ -49,6 +52,7 @@ public class PlayerController : MonoBehaviour
     enum playerState { idle, running, jumping, falling, attacking, sliding, firing, hurt, throwing, climbing} 
     [SerializeField]
     playerState state = playerState.idle;
+    playerState lastState;
 
     
     void Awake()
@@ -168,51 +172,80 @@ public class PlayerController : MonoBehaviour
         CheckSlash();
     }
     void CheckSlash()
-    {
-        
+    {   
         if (inputSlash)
-        {   
-            switch (state)
-            {   
+        {
+            lastState = state;
+            state = playerState.attacking;
+            switch (lastState)
+            {
                 //slash de idle
                 case playerState.idle:
                     //comportamento
                     animator.Play("Slash");
                     //transição pra idle
+                    attackTime += Time.deltaTime;
+                    if (attackTime >= attackDuration)
+                    {
+                        state = playerState.idle;
+                        attackTime = 0f;
+                    }
                     inputSlash = false;
                     state = playerState.idle;
-                        break;
-                // air slash
+                    break;
+                // air slash do jump
                 case playerState.jumping:
                     animator.Play("Air Slash");
-                    state = playerState.falling;
+                    attackTime += Time.deltaTime;
+                    if (attackTime >= attackDuration)
+                    {
+                        state = playerState.falling;
+                        attackTime = 0f;
+                    }
                     inputSlash = false;
-                        break;
+                    break;
+                //air slash do falling
                 case playerState.falling:
                     animator.Play("Air Slash");
-                    state = playerState.falling;
+                    attackTime += Time.deltaTime;
+                    if (attackTime >= attackDuration)
+                    {
+                        state = playerState.falling;
+                        attackTime = 0f;
+                    }
                     inputSlash = false;
-                        break;
+                    break;
                 //running slash
                 case playerState.running:
-                     //comportamento
+                    //comportamento
                     animator.Play("Run Slashing");
                     //transição
                     if (movehorizontalInput != 0)
                     {
-                        state = playerState.running;
+                        attackTime += Time.deltaTime;
+                        if (attackTime >= attackDuration)
+                        {
+                            state = playerState.running;
+                            attackTime = 0f;
+                        }
                     }
                     else
                     {
-                        state = playerState.idle;
+                        attackTime += Time.deltaTime;
+                        if (attackTime >= attackDuration)
+                        {
+                            state = playerState.idle;
+                            attackTime = 0f;
+                        }
+                        ;
                     }
                     inputSlash = false;
-                        break;
+                    break;
             }
-            
+
         }
         else if (!inputSlash && state == playerState.attacking)
-        {   
+        {
             if (movehorizontalInput != 0)
             {
                 state = playerState.running;
@@ -221,7 +254,7 @@ public class PlayerController : MonoBehaviour
             {
                 state = playerState.idle;
             }
-                   
+
         }
     }
 
@@ -254,27 +287,28 @@ public class PlayerController : MonoBehaviour
             animator.Play("Falling");
         }
         //transi��es
-        if(podepularemdobro)
+        if (podepularemdobro)
         {
-            if(Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 state = playerState.jumping;
                 podepularemdobro = false;
             }
-          
+
         }
         if (CheckaTaNoChao())
         {
-            if(movehorizontalInput != 0)
+            if (movehorizontalInput != 0)
             {
                 state = playerState.running;
             }
-            else if(movehorizontalInput == 0)
+            else if (movehorizontalInput == 0)
             {
                 state = playerState.idle;
             }
-                
+
         }
+        CheckSlash();
     }
 
     void WallClimbing()
