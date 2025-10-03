@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Movimentação Base")]
     Vector3 moviment = new Vector3();
+    [SerializeField] float velocidadehorizontal;
     [SerializeField] float speed = 3;
 
     [Header("Pulo")]
@@ -74,9 +75,13 @@ public class PlayerController : MonoBehaviour
         
         
         //vetor fixo de movimentação
-        moviment = new Vector3(movehorizontalInput, moveverticalInput, 0f);
-        moviment.Normalize();
-        transform.position += moviment * speed * Time.deltaTime;
+        if(state != playerState.climbing)
+        {
+            moviment = new Vector3(movehorizontalInput, moveverticalInput, 0f);
+            moviment.Normalize();
+            transform.position += moviment * speed * Time.deltaTime;
+        }
+   
        
         
 
@@ -95,7 +100,7 @@ public class PlayerController : MonoBehaviour
     {
         //define o vetor do raycast pra checkar se o jogador pode escalar
         vetorescalada = new Vector2(rccheckaescalada, 0);
-
+        taescalando = Physics2D.Raycast(transform.position, vetorescalada, rccheckaescalada, LayerMask.GetMask("parede"));
         if (CheckaTaNoChao())
         {
             podepularemdobro = true;
@@ -237,14 +242,21 @@ public class PlayerController : MonoBehaviour
         //comportamento do estado
         Debug.Log("ta escalando");
         animator.Play("Rope Climb");
-        moviment = new Vector3(0,moveverticalInput,0);
         moveverticalInput = Input.GetAxisRaw("Vertical");
-        rb.gravityScale = 0f;
+        if (moveverticalInput != 0 && taescalando)
+        {
+            
+            moviment = new Vector3(0, moveverticalInput, 0);
+            rb.gravityScale = 0f;
+        }
+
 
         // transição do estado
-        if(moveverticalInput != 0)
-        {
 
+        else
+        {
+            rb.gravityScale = 1f;
+            state = playerState.falling;
         }
 
 
