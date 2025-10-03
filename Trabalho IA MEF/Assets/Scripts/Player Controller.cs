@@ -39,11 +39,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     protected float slideTime = 0.5f;
 
+    [Header("Attack CDs")]
+    [SerializeField]
     protected float attackDuration = 0.5f;
+    [SerializeField]
+    protected float fireDuration = 0.4f;
+    [SerializeField]
     protected float attackTime;
     
     [Header("Checks")]
     protected bool inputpulo;
+    protected bool inputSlide;
+    protected bool inputSlash;
+    protected bool inputFiring;
     
     [SerializeField] float rccheckachao;
     [SerializeField] float rccheckaescalada;
@@ -52,8 +60,7 @@ public class PlayerController : MonoBehaviour
     protected float movehorizontalInput;
     protected float moveverticalInput;
     protected bool inputWallClimb;
-    protected bool inputSlide;
-    protected bool inputSlash;
+    
 
 
     [SerializeField]
@@ -111,8 +118,9 @@ public class PlayerController : MonoBehaviour
         moveverticalInput = Input.GetAxisRaw("Vertical");
         movehorizontalInput = Input.GetAxisRaw("Horizontal");
         inputWallClimb = Input.GetKey(KeyCode.UpArrow);
-        inputSlash = Input.GetKeyDown(KeyCode.E);
+        inputSlash = Input.GetKeyDown(KeyCode.Y);
         inputSlide = Input.GetKeyDown(KeyCode.LeftShift);
+        inputFiring = Input.GetKeyDown(KeyCode.U);
 
         switch (state)
         {
@@ -123,6 +131,7 @@ public class PlayerController : MonoBehaviour
             case playerState.climbing: WallClimbing(); break;
             case playerState.attacking: Slash(); break;
             case playerState.sliding: Slide(); break;
+            case playerState.firing: Firing(); break;
         }
 
 
@@ -147,23 +156,29 @@ public class PlayerController : MonoBehaviour
 
 
     }
-    void CheckSlide()
-    {
-        if (Input.GetKeyDown(KeyCode.LeftShift) && isRunning)
-        {
-            animator.SetTrigger("slided");
-            currentSpeed = slideSpeed;
+    //seta o estado do jogador
+    void SetStateSlide()
+    {       isSliding = true;
             state = playerState.sliding;
-        }
-        if (Input.GetKeyUp(KeyCode.LeftShift))
-        {
-            currentSpeed = playerSpeed;
-        }
-
-    }
+    }   
+    // ação do estado
     void Slide()
     {
-        
+        animator.Play("Slide");
+        currentSpeed = slideSpeed;
+        if (Input.GetKeyUp(KeyCode.LeftShift))
+        {   
+            //transição do estado
+            currentSpeed = playerSpeed;
+            if (movehorizontalInput != 0)
+            {
+                state = playerState.running;
+            }
+            else
+            {
+                state = playerState.idle;
+            }
+        }
     }
 
     void Movement()
@@ -187,6 +202,14 @@ public class PlayerController : MonoBehaviour
         if (inputSlash)
         {
             SetStateAttacking();
+        }
+        if (inputFiring)
+        {
+            SetStateFiring();
+        }
+        if (inputSlide && CheckaTaNoChao() && movehorizontalInput != 0)
+        {
+            SetStateSlide();
         }
     }
 
@@ -215,6 +238,79 @@ public class PlayerController : MonoBehaviour
         else if (inputSlash)
         {
             SetStateAttacking();
+        }
+        else if (inputFiring)
+        {
+            SetStateFiring();
+        }
+    }
+    void SetStateFiring()
+    {
+        lastState = state;
+        state = playerState.firing;
+    }
+    void Firing()
+    {
+        
+            switch (lastState)
+            {
+                //firing de idle
+                case playerState.idle:
+                    //comportamento
+                    animator.Play("Firing");
+                    //transição pra idle
+                    attackTime += Time.fixedDeltaTime;
+                    if (attackTime >= fireDuration)
+                    {
+                        state = playerState.idle;
+                        attackTime = 0f;
+                    };
+                    break;
+                // air firing do jump
+                case playerState.jumping:
+                    animator.Play("Air Firing");
+                    attackTime += Time.fixedDeltaTime;
+                    if (attackTime >= fireDuration)
+                    {
+                        state = playerState.falling;
+                        attackTime = 0f;
+                    }
+                    break;
+                //air firing do falling
+                case playerState.falling:
+                    animator.Play("Air Firing");
+                    attackTime += Time.fixedDeltaTime;
+                    if (attackTime >= fireDuration)
+                    {
+                        state = playerState.falling;
+                        attackTime = 0f;
+                    }
+                    break;
+                //running fire
+                case playerState.running:
+                    //comportamento
+                    animator.Play("Run Slashing");
+                    //transição
+                    if (movehorizontalInput != 0)
+                    {
+                        attackTime += Time.fixedDeltaTime;
+                        if (attackTime >= fireDuration)
+                        {
+                            state = playerState.running;
+                            attackTime = 0f;
+                        }
+                    }
+                    else
+                    {
+                        attackTime += Time.fixedDeltaTime;
+                        if (attackTime >= fireDuration)
+                        {
+                            state = playerState.idle;
+                            attackTime = 0f;
+                        }
+                    }
+                    break;
+
         }
     }
     void SetStateAttacking()
