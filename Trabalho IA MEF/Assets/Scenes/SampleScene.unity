@@ -318,7 +318,7 @@ MonoBehaviour:
   slideSpeed: 8
   slideTime: 0.5
   rccheckachao: 1
-  rccheckaescalada: 0
+  rccheckaescalada: 0.3
 --- !u!50 &335647267
 Rigidbody2D:
   serializedVersion: 5
