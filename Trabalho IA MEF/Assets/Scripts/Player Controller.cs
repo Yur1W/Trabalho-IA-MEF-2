@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     protected Animator animator;
     protected Rigidbody2D rb;
     protected Collider2D coll;
+    protected SpriteRenderer sprite;
     [Header("Player States")]
     [SerializeField]
     protected bool isRunning = false;
@@ -23,6 +24,9 @@ public class PlayerController : MonoBehaviour
     [Header("Pulo")]
     [SerializeField] float forcapulo;
     [SerializeField] bool podepularemdobro;
+
+    [Header("escalada")]
+    Vector3 movimentescalada = new Vector3();
 
     [Header("Player Values")]
     [SerializeField]
@@ -40,8 +44,8 @@ public class PlayerController : MonoBehaviour
     
     [SerializeField] float rccheckachao;
     [SerializeField] float rccheckaescalada;
-    Vector2 vetorescalada = new Vector2();
-    bool taescalando;
+    Vector2 vetorescalada = new Vector3();
+    bool podeescalar;
     float movehorizontalInput;
     float moveverticalInput;
     bool inputWallClimb;
@@ -60,7 +64,8 @@ public class PlayerController : MonoBehaviour
         //aplicar a física
         rb = GetComponent<Rigidbody2D>();
 
-        
+        sprite = GetComponent<SpriteRenderer>();
+
     }
 
     void Start()
@@ -72,18 +77,34 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        
-        
+
+
+        movimentescalada = new Vector3(0f,moveverticalInput , 0f);
         //vetor fixo de movimentação
-        if(state != playerState.climbing)
+        if (state == playerState.climbing)
         {
-            moviment = new Vector3(movehorizontalInput, moveverticalInput, 0f);
-            moviment.Normalize();
-            transform.position += moviment * speed * Time.deltaTime;
+            moviment = movimentescalada;
+
         }
-   
-       
-        
+        else { moviment = new Vector3(movehorizontalInput, 0f, 0f); };
+
+        moviment.Normalize();
+        transform.position += moviment * speed * Time.deltaTime;
+
+
+        if (movehorizontalInput > 0f)
+        {
+            sprite.flipX = false;
+        }
+        else if (movehorizontalInput < 0f)
+        {
+            sprite.flipX = true;
+        }
+        //pega os inputs do jogador
+        inputpulo = Input.GetKey(KeyCode.Space);
+        moveverticalInput = Input.GetAxisRaw("Vertical");
+        movehorizontalInput = Input.GetAxisRaw("Horizontal");
+        inputWallClimb = Input.GetKey(KeyCode.UpArrow);
 
         switch (state)
         {
@@ -94,22 +115,22 @@ public class PlayerController : MonoBehaviour
             case playerState.climbing: WallClimbing(); break;
         }
 
+
+
+
+
     }
     // Update is called once per frame
     void Update()
     {
         //define o vetor do raycast pra checkar se o jogador pode escalar
         vetorescalada = new Vector2(rccheckaescalada, 0);
-        taescalando = Physics2D.Raycast(transform.position, vetorescalada, rccheckaescalada, LayerMask.GetMask("parede"));
+        podeescalar = Physics2D.Raycast(transform.position, vetorescalada, rccheckaescalada, LayerMask.GetMask("parede"));
         if (CheckaTaNoChao())
         {
             podepularemdobro = true;
         }
-        //pega os inputs do jogador
-        inputpulo = Input.GetKey(KeyCode.Space);
-        movehorizontalInput = Input.GetAxisRaw("Horizontal");
-        inputWallClimb = Input.GetKey(KeyCode.UpArrow);
-
+        
         //desenha os raios para verificação dentro da unity
         Debug.DrawRay(transform.position, Vector2.down * rccheckachao, Color.red);
         Debug.DrawRay(transform.position, vetorescalada ,Color.blue);
@@ -241,12 +262,12 @@ public class PlayerController : MonoBehaviour
     {
         //comportamento do estado
         Debug.Log("ta escalando");
-        animator.Play("Rope Climb");
-        moveverticalInput = Input.GetAxisRaw("Vertical");
-        if (moveverticalInput != 0 && taescalando)
+        
+        
+        if (moveverticalInput != 0 && podeescalar)
         {
-            
-            moviment = new Vector3(0, moveverticalInput, 0);
+            animator.Play("Rope Climb");
+            moviment = movimentescalada;
             rb.gravityScale = 0f;
         }
 
@@ -256,6 +277,7 @@ public class PlayerController : MonoBehaviour
         else
         {
             rb.gravityScale = 1f;
+            moviment = moviment = new Vector3(movehorizontalInput, 0f, 0f);
             state = playerState.falling;
         }
 
