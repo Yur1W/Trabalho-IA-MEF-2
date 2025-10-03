@@ -36,11 +36,15 @@ public class PlayerController : MonoBehaviour
     
     [Header("Checks")]
     bool inputpulo;
+    
     [SerializeField] float rccheckachao;
     [SerializeField] float rccheckaescalada;
+    Vector2 vetorescalada = new Vector2();
+    bool taescalando;
     float movehorizontalInput;
     float moveverticalInput;
     bool inputWallClimb;
+
 
     [SerializeField]
     enum playerState { idle, running, jumping, falling, attacking, sliding, firing, hurt, throwing, climbing}
@@ -54,6 +58,8 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         //aplicar a física
         rb = GetComponent<Rigidbody2D>();
+
+        
     }
 
     void Start()
@@ -87,8 +93,10 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-       
-        if(CheckaTaNoChao())
+        //define o vetor do raycast pra checkar se o jogador pode escalar
+        vetorescalada = new Vector2(rccheckaescalada, 0);
+
+        if (CheckaTaNoChao())
         {
             podepularemdobro = true;
         }
@@ -96,8 +104,12 @@ public class PlayerController : MonoBehaviour
         inputpulo = Input.GetKey(KeyCode.Space);
         movehorizontalInput = Input.GetAxisRaw("Horizontal");
         inputWallClimb = Input.GetKey(KeyCode.UpArrow);
+
+        //desenha os raios para verificação dentro da unity
         Debug.DrawRay(transform.position, Vector2.down * rccheckachao, Color.red);
-        Debug.DrawRay(transform.position, -Vector2.left * rccheckaescalada,Color.blue);
+        Debug.DrawRay(transform.position, vetorescalada ,Color.blue);
+
+
     }
     void Slide()
     {
@@ -225,9 +237,15 @@ public class PlayerController : MonoBehaviour
         //comportamento do estado
         Debug.Log("ta escalando");
         animator.Play("Rope Climb");
-        rb.constraints = RigidbodyConstraints2D.FreezePositionX;
+        moviment = new Vector3(0,moveverticalInput,0);
         moveverticalInput = Input.GetAxisRaw("Vertical");
         rb.gravityScale = 0f;
+
+        // transição do estado
+        if(moveverticalInput != 0)
+        {
+
+        }
 
 
     }
@@ -235,10 +253,11 @@ public class PlayerController : MonoBehaviour
     private bool CheckaPodeEscalar()
     {
         Debug.Log("check escalada");
-        return Physics2D.Raycast(transform.position, - Vector2.left, rccheckaescalada, LayerMask.GetMask("parede"));
+        return Physics2D.Raycast(transform.position, vetorescalada, rccheckaescalada, LayerMask.GetMask("parede"));
         
 
     }
+    
     //metodo que verifica se o player
     private bool CheckaTaNoChao()
     {
