@@ -102,6 +102,7 @@ public class PlayerController : MonoBehaviour
         inputWallClimb = Input.GetKey(KeyCode.UpArrow);
         inputSlide = Input.GetKeyDown(KeyCode.LeftShift);
         inputSlash = Input.GetKeyDown(KeyCode.P);
+        inputSlash = Input.GetKey(KeyCode.P);
         Debug.DrawRay(transform.position, Vector2.down * rccheckachao, Color.red);
         Debug.DrawRay(transform.position, -Vector2.left * rccheckaescalada,Color.blue);
     }
@@ -179,7 +180,6 @@ public class PlayerController : MonoBehaviour
                     animator.Play("Slash");
                     //transição pra idle
                     inputSlash = false;
-                    
                     state = playerState.idle;
                         break;
                 // air slash
