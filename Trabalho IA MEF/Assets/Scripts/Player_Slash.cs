@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Player_Slash : PlayerController
+public class Player_Slash : MonoBehaviour
 {   
    
 }

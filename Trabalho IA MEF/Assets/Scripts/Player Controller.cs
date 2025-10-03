@@ -16,7 +16,7 @@ public class PlayerController : MonoBehaviour
     protected bool isSliding = false;
     protected bool isGrounded = true;
 
-    [Header("Movimentação Base")]
+    [Header("Movimentaï¿½ï¿½o Base")]
     Vector3 moviment = new Vector3();
     [SerializeField] float velocidadehorizontal;
     [SerializeField] float speed = 3;
@@ -38,30 +38,36 @@ public class PlayerController : MonoBehaviour
     protected float slideSpeed = 8f;
     [SerializeField]
     protected float slideTime = 0.5f;
+
+    protected float attackDuration = 0.5f;
+    protected float attackTime;
     
     [Header("Checks")]
-    bool inputpulo;
+    protected bool inputpulo;
     
     [SerializeField] float rccheckachao;
     [SerializeField] float rccheckaescalada;
-    Vector2 vetorescalada = new Vector3();
-    bool podeescalar;
-    float movehorizontalInput;
-    float moveverticalInput;
-    bool inputWallClimb;
+    protected Vector2 vetorescalada = new Vector3();
+    protected bool podeescalar;
+    protected float movehorizontalInput;
+    protected float moveverticalInput;
+    protected bool inputWallClimb;
+    protected bool inputSlide;
+    protected bool inputSlash;
 
 
     [SerializeField]
-    enum playerState { idle, running, jumping, falling, attacking, sliding, firing, hurt, throwing, climbing}
-    playerState state = playerState.idle;
+    protected enum playerState { idle, running, jumping, falling, attacking, sliding, firing, hurt, throwing, climbing}
+    protected playerState state = playerState.idle;
+    protected playerState lastState;
 
     
     void Awake()
     {
-        //determinando a variavel que será usada para:
-        //fazer as transições entre as animações
+        //determinando a variavel que serï¿½ usada para:
+        //fazer as transiï¿½ï¿½es entre as animaï¿½ï¿½es
         animator = GetComponent<Animator>();
-        //aplicar a física
+        //aplicar a fï¿½sica
         rb = GetComponent<Rigidbody2D>();
 
         sprite = GetComponent<SpriteRenderer>();
@@ -80,7 +86,7 @@ public class PlayerController : MonoBehaviour
 
 
         movimentescalada = new Vector3(0f,moveverticalInput , 0f);
-        //vetor fixo de movimentação
+        //vetor fixo de movimentaï¿½ï¿½o
         if (state == playerState.climbing)
         {
             moviment = movimentescalada;
@@ -105,6 +111,8 @@ public class PlayerController : MonoBehaviour
         moveverticalInput = Input.GetAxisRaw("Vertical");
         movehorizontalInput = Input.GetAxisRaw("Horizontal");
         inputWallClimb = Input.GetKey(KeyCode.UpArrow);
+        inputSlash = Input.GetKeyDown(KeyCode.E);
+        inputSlide = Input.GetKeyDown(KeyCode.LeftShift);
 
         switch (state)
         {
@@ -113,6 +121,8 @@ public class PlayerController : MonoBehaviour
             case playerState.falling: Fall(); break;
             case playerState.running: Movement(); break;
             case playerState.climbing: WallClimbing(); break;
+            case playerState.attacking: Slash(); break;
+            case playerState.sliding: Slide(); break;
         }
 
 
@@ -131,13 +141,13 @@ public class PlayerController : MonoBehaviour
             podepularemdobro = true;
         }
         
-        //desenha os raios para verificação dentro da unity
+        //desenha os raios para verificaï¿½ï¿½o dentro da unity
         Debug.DrawRay(transform.position, Vector2.down * rccheckachao, Color.red);
         Debug.DrawRay(transform.position, vetorescalada ,Color.blue);
 
 
     }
-    void Slide()
+    void CheckSlide()
     {
         if (Input.GetKeyDown(KeyCode.LeftShift) && isRunning)
         {
@@ -151,13 +161,17 @@ public class PlayerController : MonoBehaviour
         }
 
     }
+    void Slide()
+    {
+        
+    }
 
     void Movement()
     {
         //comportamento do estado
         animator.Play("Run");
 
-        //transições do estado
+        //transiï¿½ï¿½es do estado
         if (inputpulo && CheckaTaNoChao())
         {
             state = playerState.jumping;
@@ -170,6 +184,10 @@ public class PlayerController : MonoBehaviour
         {
             state = playerState.climbing;
         }
+        if (inputSlash)
+        {
+            SetStateAttacking();
+        }
     }
 
     void Idle()
@@ -181,7 +199,7 @@ public class PlayerController : MonoBehaviour
         {
             Debug.Log("ta no chao");
         }
-        //transições
+        //transiï¿½ï¿½es
         if (inputpulo && CheckaTaNoChao())
         {
             state = playerState.jumping;
@@ -190,20 +208,96 @@ public class PlayerController : MonoBehaviour
         {
             state = playerState.running;
         }
-        else if(inputWallClimb && CheckaPodeEscalar())
+        else if (inputWallClimb && CheckaPodeEscalar())
         {
             state = playerState.climbing;
         }
-    }
-    void slash()
-    {
-        isAttacking = Input.GetKeyDown(KeyCode.P);
-        if (isAttacking && !isSliding && !isRunning)
+        else if (inputSlash)
         {
-            isAttacking = true;
-            animator.SetTrigger("slashed");
-            state = playerState.attacking;
+            SetStateAttacking();
         }
+    }
+    void SetStateAttacking()
+    {
+        lastState = state;
+        state = playerState.attacking;
+    }
+    void Slash()
+    {
+        
+            switch (lastState)
+            {
+                //slash de idle
+                case playerState.idle:
+                    //comportamento
+                    animator.Play("Slash");
+                    //transiÃ§Ã£o pra idle
+                    attackTime += Time.fixedDeltaTime;
+                    if (attackTime >= attackDuration)
+                    {
+                        state = playerState.idle;
+                        attackTime = 0f;
+                    };
+                    break;
+                // air slash do jump
+                case playerState.jumping:
+                    animator.Play("Air Slash");
+                    attackTime += Time.fixedDeltaTime;
+                    if (attackTime >= attackDuration)
+                    {
+                        state = playerState.falling;
+                        attackTime = 0f;
+                    }
+                    break;
+                //air slash do falling
+                case playerState.falling:
+                    animator.Play("Air Slash");
+                    attackTime += Time.fixedDeltaTime;
+                    if (attackTime >= attackDuration)
+                    {
+                        state = playerState.falling;
+                        attackTime = 0f;
+                    }
+                    break;
+                //running slash
+                case playerState.running:
+                    //comportamento
+                    animator.Play("Run Slashing");
+                    //transiÃ§Ã£o
+                    if (movehorizontalInput != 0)
+                    {
+                        attackTime += Time.fixedDeltaTime;
+                        if (attackTime >= attackDuration)
+                        {
+                            state = playerState.running;
+                            attackTime = 0f;
+                        }
+                    }
+                    else
+                    {
+                        attackTime += Time.fixedDeltaTime;
+                        if (attackTime >= attackDuration)
+                        {
+                            state = playerState.idle;
+                            attackTime = 0f;
+                        }
+                    }
+                    break;
+
+        }
+        /*else if (!inputSlash && state == playerState.attacking)
+        {
+            if (movehorizontalInput != 0)
+            {
+                state = playerState.running;
+            }
+            else
+            {
+                state = playerState.idle;
+            }
+
+        } 
+        */
     }
 
     void Jump()
@@ -217,9 +311,12 @@ public class PlayerController : MonoBehaviour
        
         //rg.AddForce(new Vector2(0f, forcapulo), ForceMode2D.Impulse);
 
-        //transições
+        //transiï¿½ï¿½es
         state = playerState.falling;
-       
+       if (inputSlash)
+        {
+            SetStateAttacking();
+        }
 
     }
 
@@ -234,15 +331,19 @@ public class PlayerController : MonoBehaviour
         {
             animator.Play("Falling");
         }
-        //transições
-        if(podepularemdobro)
+        //transiï¿½ï¿½es
+        if (inputSlash)
         {
-            if(Input.GetKeyDown(KeyCode.Space))
+            SetStateAttacking();
+        }
+        if (podepularemdobro)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
             {
                 state = playerState.jumping;
                 podepularemdobro = false;
             }
-          
+
         }
         if (CheckaTaNoChao())
         {
@@ -272,7 +373,7 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        // transição do estado
+        // transiï¿½ï¿½o do estado
 
         else
         {
