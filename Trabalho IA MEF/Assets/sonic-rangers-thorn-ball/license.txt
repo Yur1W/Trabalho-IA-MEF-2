@@ -1,0 +1,11 @@
+Model Information:
+* title:	sonic-rangers-thorn-ball
+* source:	https://sketchfab.com/3d-models/sonic-rangers-thorn-ball-f30af1daa35b4524aa76ef977b504c41
+* author:	Accountnamed334 (https://sketchfab.com/Accountnamed334)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "sonic-rangers-thorn-ball" (https://sketchfab.com/3d-models/sonic-rangers-thorn-ball-f30af1daa35b4524aa76ef977b504c41) by Accountnamed334 (https://sketchfab.com/Accountnamed334) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
