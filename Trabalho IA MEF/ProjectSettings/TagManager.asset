@@ -9,6 +9,7 @@ TagManager:
   - player
   - Walls
   - Celling
+  - Spike
   layers:
   - Default
   - TransparentFX
