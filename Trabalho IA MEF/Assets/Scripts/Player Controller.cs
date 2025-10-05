@@ -50,6 +50,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     protected float hurtDuration = 0.4f;
     [SerializeField]
+    protected float throwingDuration = 0.5f;
     protected float timer;
 
     [Header("Checks")]
@@ -58,6 +59,7 @@ public class PlayerController : MonoBehaviour
     protected bool inputSlide;
     protected bool inputSlash;
     protected bool inputFiring;
+    protected bool inputThrowing;
 
     [SerializeField] float rccheckachao;
     [SerializeField] float rccheckaescalada;
@@ -133,6 +135,7 @@ public class PlayerController : MonoBehaviour
             case playerState.attacking: Slash(); break;
             case playerState.sliding: Slide(); break;
             case playerState.firing: Firing(); break;
+            case playerState.throwing: Throwing(); break;
             case playerState.hurt: Hurt(); break;
             case playerState.death: Death(); break;
             default: Idle(); break;
@@ -154,6 +157,7 @@ public class PlayerController : MonoBehaviour
         inputSlash = Input.GetKey(KeyCode.Y);
         inputSlide = Input.GetKey(KeyCode.LeftShift);
         inputFiring = Input.GetKey(KeyCode.U);
+        inputThrowing = Input.GetKey(KeyCode.I);
 
         //define o vetor do raycast pra checkar se o jogador pode escalar
         vetorescalada = new Vector2(rccheckaescalada, 0);
@@ -256,6 +260,10 @@ public class PlayerController : MonoBehaviour
         {
             SetStateFiring();
         }
+        if (inputThrowing)
+        {
+            SetStateThrowing();
+        }
         if (inputSlide && CheckaTaNoChao() && movehorizontalInput != 0)
         {
             SetStateSlide();
@@ -295,6 +303,10 @@ public class PlayerController : MonoBehaviour
         else if (inputFiring)
         {
             SetStateFiring();
+        }
+        else if (inputThrowing)
+        {
+            SetStateThrowing();
         }
     }
     void SetStateFiring()
@@ -355,7 +367,7 @@ public class PlayerController : MonoBehaviour
             //running fire
             case playerState.running:
                 //comportamento
-                animator.Play("Run Slashing");
+                animator.Play("Run Firing");
                 //transição
                 if (movehorizontalInput != 0)
                 {
@@ -496,6 +508,10 @@ public class PlayerController : MonoBehaviour
         {
             SetStateFiring();
         }
+        if (inputThrowing)
+        {
+            SetStateThrowing();
+        }
 
     }
 
@@ -522,6 +538,10 @@ public class PlayerController : MonoBehaviour
         if (inputFiring)
         {
             SetStateFiring();
+        }
+        if (inputThrowing)
+        {
+            SetStateThrowing();
         }
         
         if (CheckaTaNoChao())
@@ -609,5 +629,93 @@ public class PlayerController : MonoBehaviour
         }
         
     }
+
+    void SetStateThrowing()
+    {
+    lastState = state;
+    state = playerState.throwing;
+    }
+
+    void Throwing ()
+    {
+        switch (lastState)
+        {
+            //throw de idle
+            case playerState.idle:
+                //comportamento
+                animator.Play("Throwing");
+                //transição pra idle
+                timer += Time.fixedDeltaTime;
+                if (timer >= throwingDuration)
+                {
+                    state = playerState.idle;
+                    timer = 0f;
+                }
+                ;
+                break;
+            // air throw do jump
+            case playerState.jumping:
+                animator.Play("Air Throwing");
+                timer += Time.fixedDeltaTime;
+                if (timer >= throwingDuration)
+                {
+                    state = playerState.falling;
+                    timer = 0f;
+                }
+                break;
+            //air Throw do falling
+            case playerState.falling:
+                animator.Play("Air Throwing");
+                timer += Time.fixedDeltaTime;
+                if (CheckaTaNoChao())
+                {   if (movehorizontalInput != 0)
+                    {
+                        state = playerState.running;
+                    }
+                    else
+                    {
+                        state = playerState.idle;
+                    }
+                }
+                if (timer >= throwingDuration)
+                {
+                    state = playerState.falling;
+                    timer = 0f;
+                }
+                break;
+            //running Throw
+            case playerState.running:
+                //comportamento
+                animator.Play("Run Throwing");
+                //transição
+                if (movehorizontalInput != 0)
+                {
+                    timer += Time.fixedDeltaTime;
+                    if (timer >= throwingDuration)
+                    {
+                        state = playerState.running;
+                        timer = 0f;
+                    }
+                }
+                else
+                {
+                    timer += Time.fixedDeltaTime;
+                    if (timer >= throwingDuration)
+                    {
+                        state = playerState.idle;
+                        timer = 0f;
+                    }
+                }
+                break;
+
+        }
+    }
+
+
+
+
+
+
+
 
 }
