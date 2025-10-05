@@ -46,11 +46,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     protected float attackDuration = 0.5f;
     [SerializeField]
-    protected float fireDuration = 0.4f;
+    protected float fireDuration = 0.5f;
     [SerializeField]
-    protected float hurtDuration = 0.2f;
+    protected float hurtDuration = 0.4f;
     [SerializeField]
-    protected float attackTime;
+    protected float timer;
 
     [Header("Checks")]
     protected bool inputpulo;
@@ -126,7 +126,7 @@ public class PlayerController : MonoBehaviour
         movehorizontalInput = Input.GetAxisRaw("Horizontal");
         inputWallClimb = Input.GetKey(KeyCode.UpArrow);
         inputSlash = Input.GetKeyDown(KeyCode.Y);
-        inputSlide = Input.GetKeyDown(KeyCode.LeftShift);
+        inputSlide = Input.GetKey(KeyCode.LeftShift);
         inputFiring = Input.GetKeyDown(KeyCode.U);
 
         switch (state)
@@ -170,6 +170,7 @@ public class PlayerController : MonoBehaviour
     public void SetStateDamaged()
     {
         lastState = state;
+        timer = 0f;
         state = playerState.hurt;
     }
 
@@ -177,8 +178,8 @@ public class PlayerController : MonoBehaviour
     {
         animator.Play("Hurt");
         playerHealth--;
-        attackTime += Time.fixedDeltaTime;
-        if (attackTime >= hurtDuration)
+        timer += Time.fixedDeltaTime;
+        if (timer >= hurtDuration)
         {
             if (playerHealth <= 0)
             {
@@ -202,6 +203,7 @@ public class PlayerController : MonoBehaviour
     void SetStateSlide()
     {
         isSliding = true;
+        timer = 0f;
         state = playerState.sliding;
     }
     // ação do estado
@@ -209,7 +211,8 @@ public class PlayerController : MonoBehaviour
     {
         animator.Play("Slide");
         currentSpeed = slideSpeed;
-        if (!Input.GetKeyDown(KeyCode.LeftShift))
+        timer += Time.fixedDeltaTime;
+        if (timer >= slideTime)
         {
             //transição do estado
             currentSpeed = playerSpeed;
@@ -290,6 +293,7 @@ public class PlayerController : MonoBehaviour
     void SetStateFiring()
     {
         lastState = state;
+        timer = 0f;
         state = playerState.firing;
     }
     void Firing()
@@ -302,33 +306,44 @@ public class PlayerController : MonoBehaviour
                 //comportamento
                 animator.Play("Firing");
                 //transição pra idle
-                attackTime += Time.fixedDeltaTime;
-                if (attackTime >= fireDuration)
+                timer += Time.fixedDeltaTime;
+                if (timer >= fireDuration)
                 {
                     state = playerState.idle;
-                    attackTime = 0f;
+                    timer = 0f;
                 }
                 ;
                 break;
             // air firing do jump
             case playerState.jumping:
                 animator.Play("Air Firing");
-                attackTime += Time.fixedDeltaTime;
-                if (attackTime >= fireDuration)
+                timer += Time.fixedDeltaTime;
+                if (timer > fireDuration)
                 {
                     state = playerState.falling;
-                    attackTime = 0f;
+                    timer = 0f;
                 }
                 break;
             //air firing do falling
             case playerState.falling:
                 animator.Play("Air Firing");
-                attackTime += Time.fixedDeltaTime;
-                if (attackTime >= fireDuration)
+                timer += Time.fixedDeltaTime;
+                if (CheckaTaNoChao())
+                {   if (movehorizontalInput != 0)
+                    {
+                        state = playerState.running;
+                    }
+                    else
+                    {
+                        state = playerState.idle;
+                    }
+                }
+                if (timer > fireDuration)
                 {
                     state = playerState.falling;
-                    attackTime = 0f;
+                    timer = 0f;
                 }
+                
                 break;
             //running fire
             case playerState.running:
@@ -337,20 +352,20 @@ public class PlayerController : MonoBehaviour
                 //transição
                 if (movehorizontalInput != 0)
                 {
-                    attackTime += Time.fixedDeltaTime;
-                    if (attackTime >= fireDuration)
+                    timer += Time.fixedDeltaTime;
+                    if (timer >= fireDuration)
                     {
                         state = playerState.running;
-                        attackTime = 0f;
+                        timer = 0f;
                     }
                 }
                 else
                 {
-                    attackTime += Time.fixedDeltaTime;
-                    if (attackTime >= fireDuration)
+                    timer += Time.fixedDeltaTime;
+                    if (timer >= fireDuration)
                     {
                         state = playerState.idle;
-                        attackTime = 0f;
+                        timer = 0f;
                     }
                 }
                 break;
@@ -360,7 +375,9 @@ public class PlayerController : MonoBehaviour
     void SetStateAttacking()
     {
         lastState = state;
+        timer = 0f;
         state = playerState.attacking;
+    
     }
     void Slash()
     {
@@ -372,32 +389,42 @@ public class PlayerController : MonoBehaviour
                 //comportamento
                 animator.Play("Slash");
                 //transição pra idle
-                attackTime += Time.fixedDeltaTime;
-                if (attackTime >= attackDuration)
+                timer += Time.fixedDeltaTime;
+                if (timer >= attackDuration)
                 {
                     state = playerState.idle;
-                    attackTime = 0f;
+                    timer = 0f;
                 }
                 ;
                 break;
             // air slash do jump
             case playerState.jumping:
                 animator.Play("Air Slash");
-                attackTime += Time.fixedDeltaTime;
-                if (attackTime >= attackDuration)
+                timer += Time.fixedDeltaTime;
+                if (timer >= attackDuration)
                 {
                     state = playerState.falling;
-                    attackTime = 0f;
+                    timer = 0f;
                 }
                 break;
             //air slash do falling
             case playerState.falling:
                 animator.Play("Air Slash");
-                attackTime += Time.fixedDeltaTime;
-                if (attackTime >= attackDuration)
+                timer += Time.fixedDeltaTime;
+                if (CheckaTaNoChao())
+                {   if (movehorizontalInput != 0)
+                    {
+                        state = playerState.running;
+                    }
+                    else
+                    {
+                        state = playerState.idle;
+                    }
+                }
+                if (timer >= attackDuration)
                 {
                     state = playerState.falling;
-                    attackTime = 0f;
+                    timer = 0f;
                 }
                 break;
             //running slash
@@ -407,20 +434,20 @@ public class PlayerController : MonoBehaviour
                 //transição
                 if (movehorizontalInput != 0)
                 {
-                    attackTime += Time.fixedDeltaTime;
-                    if (attackTime >= attackDuration)
+                    timer += Time.fixedDeltaTime;
+                    if (timer >= attackDuration)
                     {
                         state = playerState.running;
-                        attackTime = 0f;
+                        timer = 0f;
                     }
                 }
                 else
                 {
-                    attackTime += Time.fixedDeltaTime;
-                    if (attackTime >= attackDuration)
+                    timer += Time.fixedDeltaTime;
+                    if (timer >= attackDuration)
                     {
                         state = playerState.idle;
-                        attackTime = 0f;
+                        timer = 0f;
                     }
                 }
                 break;
@@ -458,6 +485,10 @@ public class PlayerController : MonoBehaviour
         {
             SetStateAttacking();
         }
+        if (inputFiring)
+        {
+            SetStateFiring();
+        }
 
     }
 
@@ -477,10 +508,15 @@ public class PlayerController : MonoBehaviour
         {
             SetStateAttacking();
         }
+        if (inputFiring)
+        {
+            SetStateFiring();
+        }
         if (podepularemdobro)
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                rb.linearVelocity = new Vector2(0,0);
                 state = playerState.jumping;
                 podepularemdobro = false;
             }
