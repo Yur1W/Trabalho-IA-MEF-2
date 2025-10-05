@@ -54,6 +54,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Checks")]
     protected bool inputpulo;
+    protected bool InputPuloDuplo;
     protected bool inputSlide;
     protected bool inputSlash;
     protected bool inputFiring;
@@ -109,7 +110,7 @@ public class PlayerController : MonoBehaviour
         ;
 
         moviment.Normalize();
-        transform.position += moviment * speed * Time.deltaTime;
+        transform.position += moviment * speed * Time.fixedDeltaTime;
 
 
         if (movehorizontalInput > 0f)
@@ -120,14 +121,7 @@ public class PlayerController : MonoBehaviour
         {
             sprite.flipX = true;
         }
-        //pega os inputs do jogador
-        inputpulo = Input.GetKey(KeyCode.Space);
-        moveverticalInput = Input.GetAxisRaw("Vertical");
-        movehorizontalInput = Input.GetAxisRaw("Horizontal");
-        inputWallClimb = Input.GetKey(KeyCode.UpArrow);
-        inputSlash = Input.GetKeyDown(KeyCode.Y);
-        inputSlide = Input.GetKey(KeyCode.LeftShift);
-        inputFiring = Input.GetKeyDown(KeyCode.U);
+        
 
         switch (state)
         {
@@ -151,7 +145,16 @@ public class PlayerController : MonoBehaviour
     }
     // Update is called once per frame
     void Update()
-    {
+    {   //pega os inputs do jogador
+        inputpulo = Input.GetKey(KeyCode.Space);
+        InputPuloDuplo = Input.GetKeyDown(KeyCode.Space);
+        moveverticalInput = Input.GetAxisRaw("Vertical");
+        movehorizontalInput = Input.GetAxisRaw("Horizontal");
+        inputWallClimb = Input.GetKey(KeyCode.UpArrow);
+        inputSlash = Input.GetKey(KeyCode.Y);
+        inputSlide = Input.GetKey(KeyCode.LeftShift);
+        inputFiring = Input.GetKey(KeyCode.U);
+
         //define o vetor do raycast pra checkar se o jogador pode escalar
         vetorescalada = new Vector2(rccheckaescalada, 0);
         podeescalar = Physics2D.Raycast(transform.position, vetorescalada, rccheckaescalada, LayerMask.GetMask("parede"));
@@ -256,6 +259,10 @@ public class PlayerController : MonoBehaviour
         if (inputSlide && CheckaTaNoChao() && movehorizontalInput != 0)
         {
             SetStateSlide();
+        }
+        if (!CheckaTaNoChao())
+        {
+            state = playerState.falling;
         }
     }
 
@@ -504,6 +511,10 @@ public class PlayerController : MonoBehaviour
             animator.Play("Falling");
         }
         //transi��es
+        if (InputPuloDuplo)
+        {
+            DoubleJump();
+        }
         if (inputSlash)
         {
             SetStateAttacking();
@@ -512,16 +523,7 @@ public class PlayerController : MonoBehaviour
         {
             SetStateFiring();
         }
-        if (podepularemdobro)
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                rb.linearVelocity = new Vector2(0,0);
-                state = playerState.jumping;
-                podepularemdobro = false;
-            }
-
-        }
+        
         if (CheckaTaNoChao())
         {
             if (movehorizontalInput != 0)
@@ -534,6 +536,15 @@ public class PlayerController : MonoBehaviour
             }
 
         }
+    }
+    void DoubleJump()
+    {
+        if (podepularemdobro)
+            {
+                rb.linearVelocity = new Vector2(0,0);
+                state = playerState.jumping;
+                podepularemdobro = false;
+            }
     }
 
     void WallClimbing()
