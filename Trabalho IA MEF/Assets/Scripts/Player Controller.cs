@@ -71,7 +71,7 @@ public class PlayerController : MonoBehaviour
 
 
 
-    protected enum playerState { idle, running, jumping, falling, attacking, sliding, firing, hurt, throwing, climbing, death }
+    protected enum playerState { idle, running, jumping, doublejump, falling, fallingDJ, attacking, sliding, firing, hurt, throwing, climbing, death }
     [SerializeField]
     protected playerState state = playerState.idle;
     [SerializeField]
@@ -129,7 +129,9 @@ public class PlayerController : MonoBehaviour
         {
             case playerState.idle: Idle(); break;
             case playerState.jumping: Jump(); break;
+            case playerState.doublejump: DoubleJump(); break;
             case playerState.falling: Fall(); break;
+            case playerState.fallingDJ: FallDJ(); break;
             case playerState.running: Movement(); break;
             case playerState.climbing: WallClimbing(); break;
             case playerState.attacking: Slash(); break;
@@ -150,7 +152,7 @@ public class PlayerController : MonoBehaviour
     void Update()
     {   //pega os inputs do jogador
         inputpulo = Input.GetKey(KeyCode.Space);
-        InputPuloDuplo = Input.GetKeyDown(KeyCode.Space);
+        InputPuloDuplo = Input.GetKey(KeyCode.Space);
         moveverticalInput = Input.GetAxisRaw("Vertical");
         movehorizontalInput = Input.GetAxisRaw("Horizontal");
         inputWallClimb = Input.GetKey(KeyCode.UpArrow);
@@ -529,7 +531,7 @@ public class PlayerController : MonoBehaviour
         //transi��es
         if (InputPuloDuplo)
         {
-            DoubleJump();
+            SetStateDoubleJump();
         }
         if (inputSlash)
         {
@@ -557,14 +559,75 @@ public class PlayerController : MonoBehaviour
 
         }
     }
-    void DoubleJump()
+    void SetStateDoubleJump()
     {
         if (podepularemdobro)
             {
                 rb.linearVelocity = new Vector2(0,0);
-                state = playerState.jumping;
+                state = playerState.doublejump;
                 podepularemdobro = false;
             }
+    }
+    void DoubleJump()
+    {
+         //comportamento do estado
+
+        Debug.Log("entrou no estado de pulo duplo");
+
+        rb.linearVelocity = Vector2.up * forcapulo;
+
+        //transi��es
+        state = playerState.fallingDJ;
+        if (inputSlash)
+        {
+            SetStateAttacking();
+        }
+        if (inputFiring)
+        {
+            SetStateFiring();
+        }
+        if (inputThrowing)
+        {
+            SetStateThrowing();
+        }
+    }
+    void FallDJ()
+    {
+        //comportamento do estado
+        if (rb.linearVelocity.y > 0f)
+        {
+            animator.Play("Double Jump");
+        }
+        else
+        {
+            animator.Play("Falling");
+        }
+        //transi��es
+        if (inputSlash)
+        {
+            SetStateAttacking();
+        }
+        if (inputFiring)
+        {
+            SetStateFiring();
+        }
+        if (inputThrowing)
+        {
+            SetStateThrowing();
+        }
+
+        if (CheckaTaNoChao())
+        {
+            if (movehorizontalInput != 0)
+            {
+                state = playerState.running;
+            }
+            else if (movehorizontalInput == 0)
+            {
+                state = playerState.idle;
+            }
+
+        }
     }
 
     void WallClimbing()
