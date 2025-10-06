@@ -152,7 +152,7 @@ public class PlayerController : MonoBehaviour
     void Update()
     {   //pega os inputs do jogador
         inputpulo = Input.GetKey(KeyCode.Space);
-        InputPuloDuplo = Input.GetKey(KeyCode.Space);
+        InputPuloDuplo = Input.GetKeyDown(KeyCode.Space);
         moveverticalInput = Input.GetAxisRaw("Vertical");
         movehorizontalInput = Input.GetAxisRaw("Horizontal");
         inputWallClimb = Input.GetKey(KeyCode.UpArrow);
@@ -530,8 +530,12 @@ public class PlayerController : MonoBehaviour
         }
         //transi��es
         if (InputPuloDuplo)
-        {
+        {   
             SetStateDoubleJump();
+        }
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            Debug.Log("input pulo duplo foii apertado");
         }
         if (inputSlash)
         {
@@ -570,7 +574,7 @@ public class PlayerController : MonoBehaviour
     }
     void DoubleJump()
     {
-         //comportamento do estado
+        //comportamento do estado
 
         Debug.Log("entrou no estado de pulo duplo");
 
@@ -589,6 +593,18 @@ public class PlayerController : MonoBehaviour
         if (inputThrowing)
         {
             SetStateThrowing();
+        }
+        if(CheckaTaNoChao())
+        {
+            if (movehorizontalInput != 0)
+            {
+                state = playerState.running;
+            }
+            else if (movehorizontalInput == 0)
+            {
+                state = playerState.idle;
+            }
+
         }
     }
     void FallDJ()
