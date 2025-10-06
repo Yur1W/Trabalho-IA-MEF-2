@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     [Header("Pulo")]
     [SerializeField] float forcapulo;
     [SerializeField] bool podepularemdobro;
+    [SerializeField] float quantidadePulos = 0f;
 
     [Header("escalada")]
     Vector3 movimentescalada = new Vector3();
@@ -123,7 +124,7 @@ public class PlayerController : MonoBehaviour
         {
             sprite.flipX = true;
         }
-        
+
 
         switch (state)
         {
@@ -152,12 +153,12 @@ public class PlayerController : MonoBehaviour
     void Update()
     {   //pega os inputs do jogador
         inputpulo = Input.GetKey(KeyCode.Space);
-        InputPuloDuplo = Input.GetKeyDown(KeyCode.Space);
+        InputPuloDuplo = Input.GetKeyDown(KeyCode.LeftShift);
         moveverticalInput = Input.GetAxisRaw("Vertical");
         movehorizontalInput = Input.GetAxisRaw("Horizontal");
         inputWallClimb = Input.GetKey(KeyCode.UpArrow);
         inputSlash = Input.GetKey(KeyCode.Y);
-        inputSlide = Input.GetKey(KeyCode.LeftShift);
+        inputSlide = Input.GetKey(KeyCode.C);
         inputFiring = Input.GetKey(KeyCode.U);
         inputThrowing = Input.GetKey(KeyCode.I);
 
@@ -196,7 +197,7 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                    state = lastState;
+                state = lastState;
             }
         }
     }
@@ -350,7 +351,8 @@ public class PlayerController : MonoBehaviour
                 animator.Play("Air Firing");
                 timer += Time.fixedDeltaTime;
                 if (CheckaTaNoChao())
-                {   if (movehorizontalInput != 0)
+                {
+                    if (movehorizontalInput != 0)
                     {
                         state = playerState.running;
                     }
@@ -364,7 +366,7 @@ public class PlayerController : MonoBehaviour
                     state = playerState.falling;
                     timer = 0f;
                 }
-                
+
                 break;
             //running fire
             case playerState.running:
@@ -398,7 +400,7 @@ public class PlayerController : MonoBehaviour
         lastState = state;
         timer = 0f;
         state = playerState.attacking;
-    
+
     }
     void Slash()
     {
@@ -433,7 +435,8 @@ public class PlayerController : MonoBehaviour
                 animator.Play("Air Slash");
                 timer += Time.fixedDeltaTime;
                 if (CheckaTaNoChao())
-                {   if (movehorizontalInput != 0)
+                {
+                    if (movehorizontalInput != 0)
                     {
                         state = playerState.running;
                     }
@@ -497,6 +500,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log("entrou no estado de pulo");
 
         rb.linearVelocity = Vector2.up * forcapulo;
+        quantidadePulos++;
 
         //rg.AddForce(new Vector2(0f, forcapulo), ForceMode2D.Impulse);
 
@@ -530,12 +534,8 @@ public class PlayerController : MonoBehaviour
         }
         //transi��es
         if (InputPuloDuplo)
-        {   
-            SetStateDoubleJump();
-        }
-        if (Input.GetKeyDown(KeyCode.F))
         {
-            Debug.Log("input pulo duplo foii apertado");
+            SetStateDoubleJump();
         }
         if (inputSlash)
         {
@@ -549,7 +549,7 @@ public class PlayerController : MonoBehaviour
         {
             SetStateThrowing();
         }
-        
+
         if (CheckaTaNoChao())
         {
             if (movehorizontalInput != 0)
@@ -566,11 +566,11 @@ public class PlayerController : MonoBehaviour
     void SetStateDoubleJump()
     {
         if (podepularemdobro)
-            {
-                rb.linearVelocity = new Vector2(0,0);
-                state = playerState.doublejump;
-                podepularemdobro = false;
-            }
+        {
+            rb.linearVelocity = new Vector2(0, 0);
+            state = playerState.doublejump;
+            podepularemdobro = false;
+        }
     }
     void DoubleJump()
     {
@@ -594,7 +594,7 @@ public class PlayerController : MonoBehaviour
         {
             SetStateThrowing();
         }
-        if(CheckaTaNoChao())
+        if (CheckaTaNoChao())
         {
             if (movehorizontalInput != 0)
             {
@@ -685,20 +685,6 @@ public class PlayerController : MonoBehaviour
     {
         return Physics2D.Raycast(transform.position, Vector2.down, rccheckachao, LayerMask.GetMask("chao"));
     }
-    void SetAnimatorState()
-    {
-        switch (state)
-        {
-            case playerState.running: animator.SetBool("IsRunning", true); break;
-            case playerState.jumping: animator.SetBool("IsJumping", true); break;
-            case playerState.idle:
-                animator.SetBool("IsuRunning", false);
-                animator.SetBool("IsJumping", false); break;
-            case playerState.falling: animator.SetBool("IsJumping", false); break;
-        }
-
-
-    }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
@@ -706,16 +692,17 @@ public class PlayerController : MonoBehaviour
         {
             SetStateDamaged();
         }
-        
+
     }
 
     void SetStateThrowing()
     {
-    lastState = state;
-    state = playerState.throwing;
+        lastState = state;
+        state = playerState.throwing;
+        timer = 0f;
     }
 
-    void Throwing ()
+    void Throwing()
     {
         switch (lastState)
         {
@@ -747,7 +734,8 @@ public class PlayerController : MonoBehaviour
                 animator.Play("Air Throwing");
                 timer += Time.fixedDeltaTime;
                 if (CheckaTaNoChao())
-                {   if (movehorizontalInput != 0)
+                {
+                    if (movehorizontalInput != 0)
                     {
                         state = playerState.running;
                     }
@@ -789,12 +777,4 @@ public class PlayerController : MonoBehaviour
 
         }
     }
-
-
-
-
-
-
-
-
 }
